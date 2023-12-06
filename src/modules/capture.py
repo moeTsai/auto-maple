@@ -76,11 +76,14 @@ class Capture:
         mss.windows.CAPTUREBLT = 0
         while True:
             # Calibrate screen capture
-            handle = user32.FindWindowW(None, 'MapleStory')
+            # handle = user32.FindWindowW(None, 'MapleStory')
+            handle = user32.FindWindowW(None, '[防爆模式] 楓葉幻境')
+            
             rect = wintypes.RECT()
             user32.GetWindowRect(handle, ctypes.pointer(rect))
             rect = (rect.left, rect.top, rect.right, rect.bottom)
             rect = tuple(max(0, x) for x in rect)
+
 
             self.window['left'] = rect[0]
             self.window['top'] = rect[1]
@@ -90,10 +93,16 @@ class Capture:
             # Calibrate by finding the top-left and bottom-right corners of the minimap
             with mss.mss() as self.sct:
                 self.frame = self.screenshot()
+                cv2.imwrite('map.png', self.frame)
             if self.frame is None:
                 continue
             tl, _ = utils.single_match(self.frame, MM_TL_TEMPLATE)
-            _, br = utils.single_match(self.frame, MM_BR_TEMPLATE)
+            tl = (tl[0], tl[1] + 10)  # Update the y-coordinate of tl
+            _, br = utils.single_match(self.frame, MM_BR_TEMPLATE, (tl[0], tl[1], 300, 200))
+            
+            
+
+
             mm_tl = (
                 tl[0] + MINIMAP_BOTTOM_BORDER,
                 tl[1] + MINIMAP_TOP_BORDER
@@ -119,10 +128,13 @@ class Capture:
                     # Crop the frame to only show the minimap
                     minimap = self.frame[mm_tl[1]:mm_br[1], mm_tl[0]:mm_br[0]]
 
+
                     # Determine the player's position
                     player = utils.multi_match(minimap, PLAYER_TEMPLATE, threshold=0.8)
                     if player:
                         config.player_pos = utils.convert_to_relative(player[0], minimap)
+                        # print('P: ' + str(config.player_pos))
+
 
                     # Package display information to be polled by GUI
                     self.minimap = {
@@ -136,6 +148,7 @@ class Capture:
                     if not self.ready:
                         self.ready = True
                     time.sleep(0.001)
+                    # time.sleep(1)
 
     def screenshot(self, delay=1):
         try:

@@ -72,20 +72,50 @@ def separate_args(arguments):
     return args, kwargs
 
 
-def single_match(frame, template):
-    """
-    Finds the best match within FRAME.
-    :param frame:       The image in which to search for TEMPLATE.
-    :param template:    The template to match with.
-    :return:            The top-left and bottom-right positions of the best match.
-    """
+# def single_match(frame, template):
+#     """
+#     Finds the best match within FRAME.
+#     :param frame:       The image in which to search for TEMPLATE.
+#     :param template:    The template to match with.
+#     :return:            The top-left and bottom-right positions of the best match.
+#     """
+    
+#     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+#     result = cv2.matchTemplate(gray, template, cv2.TM_CCOEFF)
+#     _, _, _, top_left = cv2.minMaxLoc(result)
+#     w, h = template.shape[::-1]
+#     bottom_right = (top_left[0] + w, top_left[1] + h)
+#     return top_left, bottom_right
 
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+def single_match(frame, template, search_area=None):
+    """
+    Finds the best match within the specified search_area in FRAME.
+    :param frame:        The image in which to search for TEMPLATE.
+    :param template:     The template to match with.
+    :param search_area:  The region in the frame where the template matching should be performed.
+                         It should be a tuple (x, y, width, height).
+                         If None, the entire frame will be used.
+    :return:             The top-left and bottom-right positions of the best match.
+    """
+    if search_area:
+        x, y, w, h = search_area
+        frame_roi = frame[y:y+h, x:x+w]
+    else:
+        frame_roi = frame
+
+    gray = cv2.cvtColor(frame_roi, cv2.COLOR_BGR2GRAY)
     result = cv2.matchTemplate(gray, template, cv2.TM_CCOEFF)
     _, _, _, top_left = cv2.minMaxLoc(result)
-    w, h = template.shape[::-1]
-    bottom_right = (top_left[0] + w, top_left[1] + h)
+    w_template, h_template = template.shape[::-1]
+    bottom_right = (top_left[0] + w_template, top_left[1] + h_template)
+
+    if search_area:
+        # Convert coordinates from ROI to original frame
+        top_left = (top_left[0] + x, top_left[1] + y)
+        bottom_right = (bottom_right[0] + x, bottom_right[1] + y)
+
     return top_left, bottom_right
+
 
 
 def multi_match(frame, template, threshold=0.95):
