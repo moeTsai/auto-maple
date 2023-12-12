@@ -100,8 +100,6 @@ class Capture:
             tl = (tl[0], tl[1] + 10)  # Update the y-coordinate of tl
             _, br = utils.single_match(self.frame, MM_BR_TEMPLATE, (tl[0], tl[1], 300, 200))
             
-            
-
 
             mm_tl = (
                 tl[0] + MINIMAP_BOTTOM_BORDER,

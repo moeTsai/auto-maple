@@ -174,7 +174,7 @@ user32.SendInput.argtypes = (wintypes.UINT, LPINPUT, ctypes.c_int)
 #################################
 #           Functions           #
 #################################
-@utils.run_if_enabled
+# @utils.run_if_enabled
 def key_down(key):
     """
     Simulates a key-down action. Can be cancelled by Bot.toggle_enabled.
@@ -206,7 +206,7 @@ def key_up(key):
         user32.SendInput(1, ctypes.byref(x), ctypes.sizeof(x))
 
 
-@utils.run_if_enabled
+# @utils.run_if_enabled
 def press(key, n, down_time=0.05, up_time=0.1):
     """
     Presses KEY N times, holding it for DOWN_TIME seconds, and releasing for UP_TIME seconds.

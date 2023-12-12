@@ -28,6 +28,8 @@ def canny(image):
 
     image = cv2.Canny(image, 200, 300)
     colored = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+    #print out the image
+    cv2.imshow('frame', colored)
     return colored
 
 

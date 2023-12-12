@@ -21,15 +21,19 @@ capture.start()
 while not capture.ready:
     time.sleep(0.01)
 
+"""
 notifier.start()
 while not notifier.ready:
     time.sleep(0.01)
+"""
 
 listener.start()
 while not listener.ready:
     time.sleep(0.01)
 
 print('\n[~] Successfully initialized Auto Maple')
+
+
 
 gui = GUI()
 gui.start()

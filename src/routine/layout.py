@@ -138,6 +138,96 @@ class Layout:
         search_helper(self.root)
         return nodes
 
+    def next_path(self, source, target):
+        """
+        Returns the next node in the path from A to B using horizontal and vertical teleports.
+        This method uses a variant of the A* search algorithm.
+        :param source:  The position to start at.
+        :param target:  The destination.
+        :return:        The next node in the path.
+        """
+
+        fringe = []
+        vertices = [source]
+        distances = [0]
+        edge_to = [0]
+
+        def push_neighbors(index):
+            """
+            Adds possible Nodes that can be reached from POINT (using only one or
+            two teleports) to the fringe. The Nodes that are returned are all closer
+            to TARGET than POINT is.
+            :param index:   The index of the current position.
+            :return:        None
+            """
+
+            point = vertices[index]
+
+            def push_best(nodes):
+                """
+                Pushes the Node closest to TARGET to the fringe.
+                :param nodes:   A list of points to compare.
+                :return:        None
+                """
+
+                if nodes:
+                    points = [tuple(n) for n in nodes]
+                    closest = utils.closest_point(points, target)
+
+                    # Push to the fringe
+                    distance = distances[index] + utils.distance(point, closest)
+                    heuristic = distance + utils.distance(closest, target)
+                    heappush(fringe, (heuristic, len(vertices)))
+
+                    # Update vertex and edge lists to include the new node
+                    vertices.append(closest)
+                    distances.append(distance)
+                    edge_to.append(index)
+
+            x_error = (target[0] - point[0])
+            y_error = (target[1] - point[1])
+            delta = settings.move_tolerance / math.sqrt(2)
+
+            # Push best possible node using horizontal teleport
+            if abs(x_error) > settings.move_tolerance:
+                if x_error > 0:
+                    x_min = point[0] + settings.move_tolerance / 4
+                    x_max = point[0] + settings.move_tolerance * 2
+                else:
+                    x_min = point[0] - settings.move_tolerance * 2
+                    x_max = point[0] - settings.move_tolerance / 4
+                candidates = self.search(x_min,
+                                        x_max,
+                                        point[1] - delta,
+                                        point[1] + delta)
+                push_best(candidates)
+
+            # Push best possible node using vertical teleport
+            if abs(y_error) > settings.move_tolerance:
+                if y_error > 0:
+                    y_min = point[1] + settings.move_tolerance / 4
+                    y_max = 1
+                else:
+                    y_min = 0
+                    y_max = point[1] - settings.move_tolerance / 4
+                candidates = self.search(point[0] - delta,
+                                        point[0] + delta,
+                                        y_min,
+                                        y_max)
+                push_best(candidates)
+
+        # Perform the A* search algorithm
+        i = 0
+        while utils.distance(vertices[i], target) > settings.move_tolerance:
+            push_neighbors(i)
+            if len(fringe) == 0:
+                break
+            i = heappop(fringe)[1]
+
+        # Return the next node in the path
+        next_node = vertices[i]
+        return next_node
+
     def shortest_path(self, source, target):
         """
         Returns the shortest path from A to B using horizontal and vertical teleports.
